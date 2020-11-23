@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace asdasd
 {
-
     class Program
     {
         static void Main(string[] args)
         {
         }
-    } 
+    }
 }
