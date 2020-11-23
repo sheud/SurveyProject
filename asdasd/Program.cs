@@ -23,17 +23,14 @@ namespace asdasd
 
         }
 
-
-
-
-
         public class Manager
         {
             private int mID;
             private string mName;
             private int managerKey;
+        }
 
-            public string SetmName()
+        public string SetmName()
             {
 
             }
