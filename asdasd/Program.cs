@@ -18,80 +18,84 @@ namespace asdasd
             return status;
         }
 
-    public string SetQuestion()
+        public string SetQuestion()
         {
 
         }
 
 
 
-}
 
-    public class Manager
-    {
-        private int mID;
-        private string mName;
-        private int managerKey;
 
-        public string SetmName()
+        public class Manager
         {
+            private int mID;
+            private string mName;
+            private int managerKey;
+
+            public string SetmName()
+            {
+
+            }
+
+            public int GenerateKey()
+            {
+
+            }
+
+            public void GetmKey()
+            {
+                return managerKey;
+            }
+
+            public class Database
+            {
+
+            }
+
+            public class Application
+            {
+
+            }
+
+            public class Admin
+            {
+
+            }
+
+            public class managerKey
+            {
+
+            }
+
+            public class respodentKey
+            {
+
+            }
+
+            public class Page
+            {
+
+            }
+
+            public class Question
+            {
+
+            }
+
+            public class Response
+            {
+
+            }
+
+            class Program
+            {
+                static void Main(string[] args)
+                {
+                }
+            }
 
         }
 
-        public int GenerateKey()
-        {
-
-        }
-
-        public void GetmKey()
-        {
-            return managerKey;
-        }
-
-    }
-    public class Database
-    {
-
-    }
-
-    public class Application
-    {
-
-    }
-
-    public class Admin
-    {
-
-    }
-
-    public class managerKey
-    {
-
-    }
-
-    public class respodentKey
-    {
-
-    }
-
-    public class Page
-    {
-
-    }
-
-    public class Question
-    {
-
-    }
-
-    public class Response
-    {
-
-    }
-    class Program
-    {
-        static void Main(string[] args)
-        {
-        }
     }
 }
