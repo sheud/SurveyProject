@@ -37,18 +37,18 @@ namespace asdasd
         {
 
         }
-    
-    public int GenerateKey()
+
+        public int GenerateKey()
         {
 
         }
-    
-    public void GetmKey() 
+
+        public void GetmKey()
         {
             return managerKey;
         }
-    
 
+    }
     public class Database
     {
 
