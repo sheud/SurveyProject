@@ -20,7 +20,7 @@ namespace asdasd
 
         public string SetQuestion()
         {
-
+            return status;
         }
 
         public class Manager
