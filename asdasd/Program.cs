@@ -13,9 +13,9 @@ namespace asdasd
         private DateTime closedt;
         private DateTime startdt;
 
-        public string SetSurvey()
+        public string SetSurvey(string st)
         {
-
+            return status;
         }
 
     public string SetQuestion()
