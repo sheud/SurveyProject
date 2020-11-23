@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace asdasd
 {
-    public class Survey
+    class Program
     {
         private string surveyTitle;
         private string status;
@@ -92,7 +92,8 @@ namespace asdasd
                 }
             }
 
+        static void Main(string[] args)
+        {
         }
-
     }
 }
