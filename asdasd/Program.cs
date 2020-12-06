@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.OpenSsl;
 
 namespace asdasd
 {
@@ -12,42 +14,44 @@ namespace asdasd
 
     class Database
     {
+        string pw;
+        private string user;
+
         MySqlConnection connection;
         public Database()
         {
-            OpenConnection();
         }
-        public void OpenConnection()
+        public void OpenConnection(string _user, string _pw)
         {
-            connection = new MySqlConnection("server=127.0.0.1;user=root;database=testbase;port=3306;password=");
+            pw = _pw;
+            user = _user;
+            connection = new MySqlConnection(string.Format("server=127.0.0.1;user={0};database=testbase;port=3306;password={1}", _user, _pw));
             connection.Open();
         }
 
         public void Login()
         {
-            
+            Console.WriteLine("Login:");
+            user = Console.ReadLine();
+            Console.WriteLine("Password:");
+            pw = Console.ReadLine();
+            OpenConnection(user, pw);
         }
 
         public void AddUserKey(string key)
         {
             MySqlCommand addKeyCommand = connection.CreateCommand();
-            addKeyCommand.CommandText = "INSERT INTO asd (avain, userlevel) VALUES ('" + key + "'" + ",'"+ (int)UserLevel.Respodent + "');";//  + "WHERE name=@name;";
-            addKeyCommand.Parameters.AddWithValue("@avain", key);
+            addKeyCommand.CommandText = string.Format("INSERT INTO asd (avain, userlevel) VALUES ('{0}', '{1}');", key, (int)UserLevel.Respodent);
+            //showKey.CommandText = string.Format("select * from asd where avain = '{0}';", key);
+            //addKeyCommand.Parameters.AddWithValue("@avain", key);
             MySqlDataReader results = addKeyCommand.ExecuteReader();
             while (results.Read())
             {
                 Console.WriteLine(results.GetString(0));
             }
-
             Console.ReadKey(true);
             CloseConnection();
         }
-
-        //MySqlCommand addKeyCommand = connection.CreateCommand();
-        //addKeyCommand.CommandText = "INSERT INTO asd (avain, userLevel) VALUES " + "('" + key + "'" + "'" +
-        //(int) UserLevel.Respodent + "');";//  + "WHERE name=@name;";
-        //addKeyCommand.Parameters.AddWithValue("@name", "B");
-        //MySqlDataReader results = addKeyCommand.ExecuteReader();
 
         public void CloseConnection()
         {
@@ -85,12 +89,12 @@ namespace asdasd
 
         public void Login()
         {
-            //currentUser = db.Login(key);
+            db.Login();
         }
 
         public void AddRegularKey()
         {
-            string key; // ehkä kysytään databasesta
+            string key;
             key = Console.ReadLine();
             db.AddUserKey(key);
         }
@@ -99,18 +103,19 @@ namespace asdasd
     class UserInterface
     {
         private Application app;
-
+        
         public void Run(Application _app)
         {
             app = _app;
-
-            Console.WriteLine("moikka 'Add'");
+        app.Login();   
+            Console.WriteLine("write 'Add' to add a new key");
             var command = Console.ReadLine();
             while (true)
             {
                 switch (command)
                 {
                     case "Add":
+                        Console.WriteLine("Insert a new key:");
                         app.AddRegularKey();
                         break;
                 }
