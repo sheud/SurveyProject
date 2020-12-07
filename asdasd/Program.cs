@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data;
@@ -25,7 +26,7 @@ namespace asdasd
         {
             pw = _pw;
             user = _user;
-            connection = new MySqlConnection(string.Format("server=127.0.0.1;user={0};database=testbase;port=3306;password={1}", _user, _pw));
+            connection = new MySqlConnection(string.Format("server=127.0.0.1;user={0};database=group3survey;port=3306;password={1}", _user, _pw));
             connection.Open();
         }
 
@@ -44,13 +45,19 @@ namespace asdasd
             addKeyCommand.CommandText = string.Format("INSERT INTO asd (avain, userlevel) VALUES ('{0}', '{1}');", key, (int)UserLevel.Respodent);
             //showKey.CommandText = string.Format("select * from asd where avain = '{0}';", key);
             //addKeyCommand.Parameters.AddWithValue("@avain", key);
-            MySqlDataReader results = addKeyCommand.ExecuteReader();
-            while (results.Read())
-            {
-                Console.WriteLine(results.GetString(0));
-            }
-            Console.ReadKey(true);
-            CloseConnection();
+            addKeyCommand.ExecuteNonQuery();
+            //MySqlDataReader results = addKeyCommand.ExecuteReader();
+            //while (results.Read())
+            //{
+            //    Console.WriteLine(results.GetString(0));
+            //}
+            //Console.ReadKey(true);
+            //CloseConnection();
+        }
+
+        public void CreateSurvey()
+        {
+            Survey sur = new Survey();
         }
 
         public void CloseConnection()
@@ -96,7 +103,21 @@ namespace asdasd
         {
             string key;
             key = Console.ReadLine();
-            db.AddUserKey(key);
+            if (key != "q")
+            {
+                db.AddUserKey(key);
+            }
+            
+        }
+
+        public void CreateSurvey()
+        {
+            string surveyName;
+            surveyName = Console.ReadLine();
+            if (surveyName != "q")
+            {
+                db.CreateSurvey();
+            }
         }
     }
 
@@ -105,18 +126,27 @@ namespace asdasd
         private Application app;
         
         public void Run(Application _app)
-        {
+        { 
             app = _app;
         app.Login();   
-            Console.WriteLine("write 'Add' to add a new key");
-            var command = Console.ReadLine();
             while (true)
             {
+                Console.WriteLine("write 'Add key' to add a new key");
+                Console.WriteLine("write 'Create a survey' to create a new survey");
+
+                var command = Console.ReadLine();
+
                 switch (command)
                 {
-                    case "Add":
+                    case "Add key":
+                        Console.WriteLine("Insert 'q' to go back");
                         Console.WriteLine("Insert a new key:");
                         app.AddRegularKey();
+                        break;
+                    case "Create a survey":
+                        Console.WriteLine("Insert 'q' to go back");
+                        Console.WriteLine("Insert survey name:");
+                        app.CreateSurvey();
                         break;
                 }
             }
