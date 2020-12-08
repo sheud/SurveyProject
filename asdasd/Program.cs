@@ -12,52 +12,50 @@ using Org.BouncyCastle.OpenSsl;
 namespace asdasd
 {
     enum UserLevel { Admin = 1, Manager = 2, Respodent = 3}
+    enum QuestionType { }
 
     class Database
     {
-        string pw;
-        private string user;
 
         MySqlConnection connection;
         public Database()
         {
+            Login();
         }
-        public void OpenConnection(string _user, string _pw)
+        public void OpenConnection()
         {
-            pw = _pw;
-            user = _user;
-            connection = new MySqlConnection(string.Format("server=127.0.0.1;user={0};database=group3survey;port=3306;password={1}", _user, _pw));
+
+            connection = new MySqlConnection(string.Format("server=127.0.0.1;user=root;database=group3survey;port=3306;password="));
             connection.Open();
         }
 
         public void Login()
         {
-            Console.WriteLine("Login:");
-            user = Console.ReadLine();
-            Console.WriteLine("Password:");
-            pw = Console.ReadLine();
-            OpenConnection(user, pw);
+            OpenConnection();
         }
 
         public void AddUserKey(string key)
         {
-            MySqlCommand addKeyCommand = connection.CreateCommand();
-            addKeyCommand.CommandText = string.Format("INSERT INTO asd (avain, userlevel) VALUES ('{0}', '{1}');", key, (int)UserLevel.Respodent);
-            //showKey.CommandText = string.Format("select * from asd where avain = '{0}';", key);
-            //addKeyCommand.Parameters.AddWithValue("@avain", key);
-            addKeyCommand.ExecuteNonQuery();
-            //MySqlDataReader results = addKeyCommand.ExecuteReader();
-            //while (results.Read())
-            //{
-            //    Console.WriteLine(results.GetString(0));
-            //}
-            //Console.ReadKey(true);
-            //CloseConnection();
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = string.Format("INSERT INTO avaimet (avainkoodi, status ) VALUES ('{0}', 'usable');", key);
+            command.ExecuteNonQuery();
         }
 
-        public void CreateSurvey()
+        public void AddManagerKey(string key)
+        {
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = string.Format("INSERT INTO avaimet (avainkoodi, status ) VALUES ('{0}', 'usable');", key);
+            command.ExecuteNonQuery();
+        }
+
+        public void CreateSurvey(string surveyName)
         {
             Survey sur = new Survey();
+        }
+
+        public void CreateQuestion(string question)
+        {
+
         }
 
         public void CloseConnection()
@@ -116,7 +114,7 @@ namespace asdasd
             surveyName = Console.ReadLine();
             if (surveyName != "q")
             {
-                db.CreateSurvey();
+                //db.CreateSurvey();
             }
         }
     }
@@ -158,7 +156,6 @@ namespace asdasd
         static void Main(string[] args)
         {
             Application app = new Application();
-           
         }
     }
 }
