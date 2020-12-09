@@ -11,7 +11,7 @@ using Org.BouncyCastle.OpenSsl;
 
 namespace asdasd
 {
-    enum UserLevel { Admin = 1, Manager = 2, Respodent = 3}
+    enum UserLevel { Respodent = 1, Manager = 2, Admin = 3 }
     enum QuestionType { }
 
     class Database
@@ -24,7 +24,6 @@ namespace asdasd
         }
         public void OpenConnection()
         {
-
             connection = new MySqlConnection(string.Format("server=127.0.0.1;user=root;database=group3survey;port=3306;password="));
             connection.Open();
         }
@@ -37,7 +36,7 @@ namespace asdasd
         public void AddUserKey(string key)
         {
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = string.Format("INSERT INTO avaimet (avainkoodi, status ) VALUES ('{0}', 'usable');", key);
+            command.CommandText = string.Format("INSERT INTO avaimet (avainkoodi, status, level ) VALUES ('{0}', 'usable', '{1}');", key, (int)UserLevel.Respodent);
             command.ExecuteNonQuery();
         }
 
