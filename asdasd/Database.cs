@@ -48,13 +48,6 @@ namespace asdasd
             command.CommandText =
                 string.Format("INSERT INTO avaimet (avainkoodi, status, level, surveyID) VALUES ('{0}', 'usable', '{1}', '{2}');", key, (int)UserLevel.Respondent, surveyId);
             command.ExecuteNonQuery();
-
-            // päivittää Userkeyn myös survey tableen:
-            MySqlCommand cmd = connection.CreateCommand();
-            cmd.CommandText = string.Format("UPDATE survey SET surveyKey = '{0}' WHERE sID = '{1}';", key, surveyId);
-            cmd.ExecuteNonQuery();
-
-
         }
 
         public void AddManagerKey(string key)
@@ -201,15 +194,33 @@ namespace asdasd
                 notEoF = myReader.Read();
             }
             myReader.Close();
-            Console.WriteLine("Add key for the survey:");
-            string surveyKey = Console.ReadLine();
-            AddUserKey(surveyKey, sid);
             return (surveyName, sid);
         }
 
         public string GetUserKeyFromSurvey(int _surveyId)
         {
             string userKey = "";
+            int surveyId = _surveyId;
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = string.Format("SELECT * FROM avaimet WHERE surveyID='{0}';", surveyId);
+            command.CommandType = CommandType.Text;
+            MySqlDataReader myReader = command.ExecuteReader();
+
+            bool notEoF;
+            notEoF = myReader.Read();
+            while (notEoF)
+            {
+                userKey = myReader["avainkoodi"].ToString();
+                notEoF = myReader.Read();
+            }
+
+            myReader.Close();
+            return userKey;
+        }
+        public DateTime GetSurveyExpireDate(int _surveyId)
+        {
+            DateTime expDate = new DateTime();
+            string expireDate = "";
             int surveyId = _surveyId;
             MySqlCommand command = connection.CreateCommand();
             command.CommandText = string.Format("SELECT * FROM survey WHERE sID='{0}';", surveyId);
@@ -220,18 +231,64 @@ namespace asdasd
             notEoF = myReader.Read();
             while (notEoF)
             {
-                userKey = myReader["surveyKey"].ToString();
+                expireDate = myReader["expireDate"].ToString();
                 notEoF = myReader.Read();
             }
 
             myReader.Close();
-            return userKey;
+           expDate = Convert.ToDateTime(expireDate);
+            return expDate;
+        }
+
+        public string GetSurveyStatus(int _surveyId)
+        {
+            string surveyStatus = "";
+            int surveyId = _surveyId;
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = string.Format("SELECT * FROM survey WHERE sID='{0}';", surveyId);
+            command.CommandType = CommandType.Text;
+            MySqlDataReader myReader = command.ExecuteReader();
+
+            bool notEoF;
+            notEoF = myReader.Read();
+            while (notEoF)
+            {
+                surveyStatus = myReader["status"].ToString();
+                notEoF = myReader.Read();
+            }
+
+            myReader.Close();
+            
+            return surveyStatus;
+        }
+
+        public void GetUserKeys(int _surveyId)
+        {
+            string userKey = "";
+            int surveyId = _surveyId;
+            int keyCount = 1;
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = string.Format("SELECT * FROM avaimet WHERE surveyID='{0}';", surveyId);
+            command.CommandType = CommandType.Text;
+            MySqlDataReader myReader = command.ExecuteReader();
+
+            bool notEoF;
+            notEoF = myReader.Read();
+            while (notEoF)
+            {
+                Console.Write(string.Format("KEY {0}:", keyCount));
+                Console.WriteLine(string.Format(" " + myReader["avainkoodi"].ToString()));
+                notEoF = myReader.Read();
+                keyCount++;
+            }
+
+            myReader.Close();
+           
         }
 
         public void CreateQuestion(int _survid)
         {
             int maxLength;
-            string userKey = GetUserKeyFromSurvey(_survid);
             Console.WriteLine("[1] Text question\n[2] multiple choice\n[3] Radiobutton\n");
             int qType = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Insert Question:");
@@ -239,11 +296,9 @@ namespace asdasd
             Console.WriteLine("Insert max length for the answer (1-1000 characters)");
             maxLength = Convert.ToInt32(Console.ReadLine());
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = string.Format("INSERT INTO question (sID, qType, question, userKey, maxLength) Values ('{0}', '{1}', '{2}', '{3}', {4});", _survid, qType, question, userKey, maxLength);
+            command.CommandText = string.Format("INSERT INTO question (sID, qType, question, maxLength) Values ('{0}', '{1}', '{2}', '{3}');", _survid, qType, question, maxLength);
             command.ExecuteNonQuery();
-            // testataan jos luodaan vastaus samalla kun tehdään kysymys
-            //command.CommandText = string.Format("INSERT INTO answer (surveyID, qType, question, userKey) Values ('{0}', '{1}', '{2}', '{3}');", _survid, qType, question, userKey);
-            //command.ExecuteNonQuery();
+
         }
 
 
@@ -261,7 +316,7 @@ namespace asdasd
             while (notEoF)
             {
                 Console.Write(string.Format("\n\nID: " + myReader["sID"].ToString()));
-                Console.WriteLine(string.Format("\nSurvey name: " + myReader["surveyName"].ToString() + "\nstatus: " + myReader["status"] + "\nClose date: " + myReader["expireDate"]) + "\nRespondent keys: " + myReader["surveyKey"].ToString());
+                Console.WriteLine(string.Format("\nSurvey name: " + myReader["surveyName"].ToString() + "\nstatus: " + myReader["status"] + "\nClose date: " + myReader["expireDate"]));
                 notEoF = myReader.Read();
             }
 
@@ -294,9 +349,11 @@ namespace asdasd
 
         public void GetAnswers(int _surveyId, string _userKey)
         {
+            
             string userKey = _userKey;
             int questionNumber = 1;
             int surveyId = _surveyId;
+            string answerDate = "";
             MySqlCommand command = connection.CreateCommand();
             command.CommandText = string.Format("SELECT * FROM answers WHERE surveyID='{0}' AND userKey='{1}';", surveyId, userKey);
             command.CommandType = CommandType.Text;
@@ -309,64 +366,117 @@ namespace asdasd
             {
                 Console.Write(string.Format("{0}: ", questionNumber));
                 Console.WriteLine(string.Format(myReader["answer"].ToString()));
+                answerDate = myReader["submitTime"].ToString();
                 notEoF = myReader.Read();
                 questionNumber++;
             }
 
             Console.WriteLine("\n");
+            Console.WriteLine("Answers were submitted: " +answerDate);
+            Console.WriteLine("\n");
             myReader.Close();
         }
-
-        public void AnswerSurvey(string _userKey)
+        public int GetRespondentSurvey(string _surveyKey)
         {
-            Console.Clear();
-            List<string> lista = new List<string>();
-            int surveyId;
-            string userKey = _userKey;
-            int qType;
-            int questionId;
-            int maxLength;
+            int sid = 0;
+            string surveyKey = _surveyKey;
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = string.Format("SELECT * FROM question WHERE userKey='{0}';", userKey);
+            command.CommandText = string.Format("SELECT * FROM avaimet WHERE avainkoodi='{0}';", surveyKey);
             command.CommandType = CommandType.Text;
             MySqlDataReader myReader = command.ExecuteReader();
+
             bool notEoF;
             notEoF = myReader.Read();
-
+            Console.WriteLine("\nSurveys in database:\n");
             while (notEoF)
             {
-                
-                Console.Write(string.Format("question: " + myReader["question"].ToString()) + "\n");
-                qType = (int)myReader["qType"];
-                surveyId = (int)myReader["sID"];
-                questionId = (int)myReader["qID"];
-                maxLength = (int)myReader["maxLength"];
-                
-                string answer = Console.ReadLine();
-
-                if (answer.Length <= maxLength)
-                {
-                    lista.Add(string.Format("INSERT INTO Answers(surveyID, qType, answer, userKey, qID) Values('{0}', '{1}', '{2}', '{3}', '{4}');", surveyId, qType, answer, userKey, questionId));
-
-                    notEoF = myReader.Read();
-                }
-
-                else
-                {
-                    Console.WriteLine("Your answer is too long");
-                    Console.WriteLine("Max length for this question is: " + maxLength + " characters");
-                }
-
-                
-               
+                sid = (int)myReader["surveyID"];
+                notEoF = myReader.Read();
             }
 
             Console.WriteLine("\n");
             myReader.Close();
-            foreach (string c in lista)
+            return sid;
+        }
+
+        public void AnswerSurvey(int _sid, string _userKey)
+        {
+            Console.Clear();
+            List<string> lista = new List<string>();
+            int surveyId = _sid;
+            string surveyStatus = "";
+            surveyStatus = GetSurveyStatus(surveyId);
+            string userKey = _userKey;
+            DateTime expireDate = new DateTime();
+            expireDate = GetSurveyExpireDate(surveyId);
+            int compareTime = DateTime.Compare(DateTime.Now, expireDate);
+            int qType;
+            int questionId;
+            int maxLength;
+            var SqlFormatTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            if (surveyStatus == "ongoing")
             {
-                command.CommandText = c;
-                command.ExecuteNonQuery();
+
+
+                if (compareTime < 0)
+                {
+
+
+
+                    MySqlCommand command = connection.CreateCommand();
+                    command.CommandText = string.Format("SELECT * FROM question WHERE sID='{0}';", surveyId);
+                    command.CommandType = CommandType.Text;
+                    MySqlDataReader myReader = command.ExecuteReader();
+                    bool notEoF;
+                    notEoF = myReader.Read();
+
+                    while (notEoF)
+                    {
+                        Console.Write(string.Format("question: " + myReader["question"].ToString()) + "\n");
+                        qType = (int) myReader["qType"];
+                        surveyId = (int) myReader["sID"];
+                        questionId = (int) myReader["qID"];
+                        maxLength = (int) myReader["maxLength"];
+
+                        string answer = Console.ReadLine();
+
+                        if (answer.Length <= maxLength)
+                        {
+                            lista.Add(string.Format(
+                                "INSERT INTO Answers(surveyID, qType, answer, userKey, qID, submitTime) Values('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');",
+                                surveyId, qType, answer, userKey, questionId, SqlFormatTime));
+
+                            notEoF = myReader.Read();
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("Your answer is too long");
+                            Console.WriteLine("Max length for this question is: " + maxLength + " characters");
+                        }
+
+
+
+                    }
+
+                    Console.WriteLine("\n");
+                    myReader.Close();
+                    foreach (string c in lista)
+                    {
+                        command.CommandText = c;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("The survey has expired!");
+                    Console.WriteLine("Survey expire date: " + expireDate);
+                }
+            }
+            else
+            {
+                Console.WriteLine("The survey is closed.");
             }
         }
 

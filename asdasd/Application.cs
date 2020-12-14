@@ -134,7 +134,11 @@ namespace asdasd
         {
             string userKey;
             userKey = Console.ReadLine();
-            db.AnswerSurvey(userKey);
+            if (userKey != "q")
+            {
+                int surveyid = db.GetRespondentSurvey(userKey);
+                db.AnswerSurvey(surveyid, userKey);
+            }
         }
 
         public void GetQuestions(int _survey)
@@ -153,10 +157,12 @@ namespace asdasd
             int surveyId = Convert.ToInt32(Console.ReadLine());
             if (userLevel == 2 && managerId != 0)
             {
-                GetQuestions(surveyId);
                 db.GetUserKeyFromSurvey(surveyId);
+                Console.WriteLine("Keys that has been used to answer this survey:");
+                db.GetUserKeys(surveyId);
                 Console.WriteLine("choose user key: ");
                 userKey = Console.ReadLine();
+                GetQuestions(surveyId);
                 db.GetAnswers(surveyId, userKey);
             }
         }

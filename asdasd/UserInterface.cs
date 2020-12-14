@@ -78,9 +78,9 @@ namespace asdasd
                             app.ManagerLogin();
                             break;
                         case "3":
+                            Console.WriteLine("Insert 'q' to go back");
                             Console.WriteLine("Insert a survey key");
                             app.AnswerSurvey();
-                            Console.WriteLine("Insert 'q' to go back");
                             break;
 
                     }
